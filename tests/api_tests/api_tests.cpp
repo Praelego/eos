@@ -454,7 +454,8 @@ BOOST_FIXTURE_TEST_CASE(test_all, testing_fixture)
       CAPTURE(cerr, CALL_TEST_FUNCTION( TEST_METHOD("test_string", "print_unicode"), {}, {}) );
       BOOST_CHECK_EQUAL( capture.size() , 1);
       BOOST_CHECK_EQUAL( capture[0], "你好，世界！");
-
+      BOOST_CHECK_MESSAGE( CALL_TEST_FUNCTION( TEST_METHOD("test_string", "test_utf8_validation"), {}, {} ) == WASM_TEST_PASS, "test_string::test_utf8_validation()" );
+      
 } FC_LOG_AND_RETHROW() }
 
 #define MEMORY_TEST_RUN(account_name, test_wast)                                                           \
