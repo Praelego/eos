@@ -1555,6 +1555,9 @@ namespace eos {
       if(allowed_connections == None)
         return false;
 
+      if(allowed_connections == Any)
+        return true;
+
       if(allowed_connections & (Producers | Specified)) {
         auto allowed_it = std::find(allowed_peers.begin(), allowed_peers.end(), msg.key);
         auto private_it = private_keys.find(msg.key);
