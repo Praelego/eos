@@ -102,11 +102,12 @@ void producer_plugin::set_program_options(
          ("enable-stale-production", boost::program_options::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
          ("required-participation", boost::program_options::bool_switch()->notifier([this](int e){my->_required_producer_participation = uint32_t(e*config::Percent1);}), "Percent of producers (0-99) that must be participating in order to produce blocks")
          ("producer-name,p", boost::program_options::value<vector<string>>()->composing()->multitoken(),
-          ("ID of producer controlled by this node (e.g. inita; may specify multiple times)"))
+         ("ID of producer controlled by this node (e.g. inita; may specify multiple times)"))
          ("private-key", boost::program_options::value<vector<string>>()->composing()->multitoken()->default_value({fc::json::to_string(private_key_default)},
-                                                                                                fc::json::to_string(private_key_default)),
+                                                                                                                  fc::json::to_string(private_key_default)),
           "Tuple of [PublicKey, WIF private key] (may specify multiple times)")
          ;
+
    command_line_options.add(producer_options);
    config_file_options.add(producer_options);
 
@@ -134,19 +135,35 @@ void producer_plugin::set_program_options(
          ;
 }
 
-Name producer_plugin::first_producer_name() const
-{
-   return *my->_producers.begin();
-}
-
-fc::ecc::compact_signature producer_plugin::sign_compact(const Name& producer, const fc::sha256& digest) const
+chain::public_key_type producer_plugin::first_producer_public_key() const
 {
   chain::chain_controller& chain = app().get_plugin<chain_plugin>().chain();
-  public_key_type key = chain.get_producer(producer).signing_key;
-  auto private_key_itr = my->_private_keys.find(key);
-  FC_ASSERT(private_key_itr != my->_private_keys.end(), "Local producer ${prod} has no private key in config.ini", ("prod", producer));
+  try {
+    return chain.get_producer(*my->_producers.begin()).signing_key;
+  } catch(std::out_of_range) {
+    return chain::public_key_type();
+  }
+}
 
-  return private_key_itr->second.sign_compact(digest);
+bool producer_plugin::is_producer_key(const chain::public_key_type& key) const
+{
+  auto private_key_itr = my->_private_keys.find(key);
+  if(private_key_itr != my->_private_keys.end())
+    return true;
+  return false;
+}
+
+fc::ecc::compact_signature producer_plugin::sign_compact(const chain::public_key_type& key, const fc::sha256& digest) const
+{
+  if(key != chain::public_key_type()) {
+    auto private_key_itr = my->_private_keys.find(key);
+    FC_ASSERT(private_key_itr != my->_private_keys.end(), "Local producer has no private key in config.ini corresponding to public key ${key}", ("key", key));
+
+    return private_key_itr->second.sign_compact(digest);
+  }
+  else {
+    return fc::ecc::compact_signature();
+  }
 }
 
 template<typename T>
