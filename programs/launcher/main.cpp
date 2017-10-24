@@ -429,7 +429,7 @@ launcher_def::write_config_file (eosd_def &node) {
       << "listen-endpoint = 0.0.0.0:" << node.p2p_port << "\n"
       << "public-endpoint = " << node.public_name << ":" << node.p2p_port << "\n";
   if (allowed_connections & PC_ANY) {
-    cfg << "allowed_connection = any\n";
+    cfg << "allowed-connection = any\n";
   }
   else
   {

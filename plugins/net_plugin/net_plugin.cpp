@@ -1757,26 +1757,17 @@ namespace eos {
     }
 
     if(options.count("allowed-connection")) {
-      dlog("allowed-connection count is non-zero");
       const std::vector<std::string> allowed_remotes = options["allowed-connection"].as<std::vector<std::string>>();
       for(const std::string& allowed_remote : allowed_remotes)
       {
-        if(allowed_remote == "any") {
-            dlog("allowed_connections |= Any");
+        if(allowed_remote == "any")
           my->allowed_connections |= net_plugin_impl::Any;
-          }
-        else if(allowed_remote == "producers") {
-            dlog("allowed_connections |= Producers");
+        else if(allowed_remote == "producers")
           my->allowed_connections |= net_plugin_impl::Producers;
-          }
-        else if(allowed_remote == "specified") {
-            dlog("allowed_connections |= Specified");
+        else if(allowed_remote == "specified")
           my->allowed_connections |= net_plugin_impl::Specified;
-          }
-        else if(allowed_remote == "none") {
-            dlog("allowed_connections = None");
+        else if(allowed_remote == "none")
           my->allowed_connections = net_plugin_impl::None;
-          }
       }
     }
 
